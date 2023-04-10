@@ -1,8 +1,8 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 import { PlaceDetail, extractObj } from "../_places_service/interfaces.ts"
-import { REVIEW_TABLE } from "./review_utils.ts"
-import { PHOTO_TABLE } from "./photo_utils.ts"
+import { REVIEW_TABLE, ReviewRow } from "./review_utils.ts"
+import { PHOTO_TABLE, PhotoRow } from "./photo_utils.ts"
 
 const PLACE_DETAIL_TABLE = "placedetails"
 
@@ -26,6 +26,8 @@ export interface PlaceDetailRow {
 	lat: number,
     long: number,
 	formatted_address: string;
+    photos: PhotoRow[];
+    reviews: ReviewRow[];
 	dine_in: boolean;
 	takeout: boolean;
 	serves_breakfast: boolean;
@@ -33,7 +35,7 @@ export interface PlaceDetailRow {
 	serves_dinner: boolean;
 }
 
-export async function addPlaceDetails(supabaseClient: SupabaseClient, placeDetails: PlaceDetail): Promise<PlaceDetailRow> {
+export async function addPlaceDetails(supabaseClient: SupabaseClient, placeDetails: PlaceDetail) {
     const data = extractPlaceDetail(placeDetails)
     
     const processedPlaceDetail = {
@@ -50,14 +52,29 @@ export async function addPlaceDetails(supabaseClient: SupabaseClient, placeDetai
         throw error
     } 
     
-    return processedPlaceDetail
+    return
+}
+
+export async function deletePlaceDetails(supabaseClient: SupabaseClient, place_id: string) {
+    const { error } = await supabaseClient.from(PLACE_DETAIL_TABLE)
+        .delete()
+        .eq("place_id", place_id)
+
+    if (error) {
+        console.error(error.message)
+        throw error
+    } 
+    
+    return
 }
 
 export async function fetchPlaceDetails(supabaseClient: SupabaseClient, place_id: string): Promise<PlaceDetailRow | null> {
     // Check database
     const { data, error } = await supabaseClient.from(PLACE_DETAIL_TABLE)
         .select(`
-            *
+            *,
+            ${PHOTO_TABLE} (*),
+            ${REVIEW_TABLE} (*)
         `)
         .eq('place_id', place_id)
 
