@@ -39,10 +39,9 @@ export const getNearbyPlaces = async (category: string, lat: number, long: numbe
     params.set("radius", radius);
     params.set("type", category);
     if (nextPageToken !== "") {
-        params.set("pageToken", nextPageToken)
+        params.set("pagetoken", nextPageToken)
     }   
     const url = createUrlWithKey(NEARBY_PLACES_URL, params);
-    
     const res: ApiResponse<PlacesRes> = await httpUtils.get(url)
     return res.data;
 }
