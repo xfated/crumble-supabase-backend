@@ -29,7 +29,7 @@ export interface Place {
 	rating: number;
 	user_ratings_total: number;
 	business_status: string;
-	opening_hours: OpeningHours;
+	// opening_hours: OpeningHours;
 }
 
 export interface PlacesRes {
@@ -57,12 +57,19 @@ interface Geometry {
 	location: Location;
 }
 
+export interface AddressComponent {
+	long_name: string;
+	short_name: string;
+	types: string[];
+}
+
 export interface PlaceDetail {
 	place_id: string;
 	name: string;
 	url: string;
 	geometry: Geometry;
 	formatted_address: string;
+	address_components: AddressComponent[];
 	photos: Photo[];
 	reviews: Review[];
 	dine_in: boolean;

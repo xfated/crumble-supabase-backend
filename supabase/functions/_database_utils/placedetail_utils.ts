@@ -1,11 +1,20 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-import { PlaceDetail, extractObj } from "../_places_service/interfaces.ts"
+import { Place, PlaceDetail, AddressComponent, extractObj } from "../_places_service/interfaces.ts"
 import { REVIEW_TABLE, ReviewRow } from "./review_utils.ts"
 import { PHOTO_TABLE, PhotoRow } from "./photo_utils.ts"
 
-const PLACE_DETAIL_TABLE = "placedetails"
+export const PLACE_DETAIL_TABLE = "placedetails"
 
+const extractNearbyPlaceData = extractObj<Place>([
+    "name",
+    "place_id",
+    "vicinity",
+	"price_level",
+	"rating",
+	"user_ratings_total",
+	"business_status"
+])
 const extractPlaceDetail = extractObj<PlaceDetail>([
     "place_id",
     "name",
@@ -20,7 +29,7 @@ const extractPlaceDetail = extractObj<PlaceDetail>([
 
 export interface PlaceDetailRow {
     place_id: string,
-    created_at?: string,
+    created_at: string,
 	name: string,
 	url: string,
 	lat: number,
@@ -33,15 +42,43 @@ export interface PlaceDetailRow {
 	serves_breakfast: boolean;
 	serves_lunch: boolean;
 	serves_dinner: boolean;
+
+    // info from Place
+    country_long: string;
+    country_short: string;
+    vicinity: string;
+    types: string;
+    price_level: number;
+    rating: number;
+    user_ratings_total: number;
+    business_status: string;
 }
 
-export async function addPlaceDetails(supabaseClient: SupabaseClient, placeDetails: PlaceDetail) {
-    const data = extractPlaceDetail(placeDetails)
-    
+const extractCountry = (placeDetail: PlaceDetail): AddressComponent | null => {
+    if (!placeDetail.address_components) {
+        return null
+    }
+    const country = placeDetail.address_components.filter(x => x.types.includes("country"))
+    if (country.length == 0) {
+        return null
+    }
+    return country[0]
+}
+
+export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlaceData: Place, placeDetails: PlaceDetail) {
+    const placeData = extractPlaceDetail(placeDetails)
+    const extractedNearbyPlaceData = extractNearbyPlaceData(nearbyPlaceData)
+
+    const country = extractCountry(placeDetails)
+
     const processedPlaceDetail = {
-        ...data,
+        ...extractedNearbyPlaceData,
+        ...placeData,
         "lat": placeDetails.geometry.location.lat,
-        "long": placeDetails.geometry.location.lng
+        "long": placeDetails.geometry.location.lng,
+        "country_long": country ? country.long_name : "",
+        "country_short": country ? country.short_name : "",
+        "types": nearbyPlaceData.types.join(",")
     }
 
     const { error } = await supabaseClient.from(PLACE_DETAIL_TABLE)

@@ -1,5 +1,5 @@
 import { ApiResponse, httpUtils } from "./http_utils.ts"
-import { DetailRes, PlacesRes } from "./interfaces.ts"
+import { Place, DetailRes, PlacesRes } from "./interfaces.ts"
 import { addReviews, getReviews, deleteReviews, ReviewRow } from "../_database_utils/review_utils.ts"
 import { addPhotos, getPhotos, deletePhotos, PhotoRow } from "../_database_utils/photo_utils.ts"
 import { addPlaceDetails, deletePlaceDetails, fetchPlaceDetails, PlaceDetailRow } from "../_database_utils/placedetail_utils.ts"
@@ -15,6 +15,7 @@ const placeDetailFields = [
     "place_id",
 	"url",
     "geometry",
+    "address_components",
 	"formatted_address",
 	"photos",
 	"reviews",
@@ -58,7 +59,7 @@ export const getNearbyPlacesWithDetails = async (supabaseClient: SupabaseClient,
     const results = await getNearbyPlaces(supabaseClient, category, lat, long, radius, nextPageToken)
     let resWithDetails: Promise<PlaceDetailRow>[] = []
     for (const result of results.results) {
-        resWithDetails.push(getPlaceDetails(supabaseClient, result.place_id))
+        resWithDetails.push(getPlaceDetails(supabaseClient, result))
     }
     return {
         "results": await Promise.all(resWithDetails),
@@ -79,9 +80,9 @@ const isOutdated = (placeDetails: PlaceDetailRow): boolean => {
     return created_at < ttl
 }
 
-export const getPlaceDetails = async (supabaseClient: SupabaseClient, place_id: string): Promise<PlaceDetailRow> => {    
+export const getPlaceDetails = async (supabaseClient: SupabaseClient, placeData: Place): Promise<PlaceDetailRow> => {    
     // Check db
-    let placeDetails = await fetchPlaceDetails(supabaseClient, place_id)
+    let placeDetails = await fetchPlaceDetails(supabaseClient, placeData.place_id)
 
     let isValid = true
     if (!placeDetails) { // not found in db
@@ -96,19 +97,19 @@ export const getPlaceDetails = async (supabaseClient: SupabaseClient, place_id: 
 
     // Get new results
     console.log("Fetching new results")
-    await requestPlaceDetails(supabaseClient, place_id)
+    await requestPlaceDetails(supabaseClient, placeData)
 
     // handle null so we don't have to handle nulls downstream
-    const updatedResults = await fetchPlaceDetails(supabaseClient, place_id)
+    const updatedResults = await fetchPlaceDetails(supabaseClient, placeData.place_id)
     if (!updatedResults) {
         throw new Error("Unable to getPlaceDetails")
     }
     return updatedResults
 }
 
-const requestPlaceDetails = async (supabaseClient: SupabaseClient, place_id: string) => {
+const requestPlaceDetails = async (supabaseClient: SupabaseClient, placeData: Place) => {
     const params = new Map();
-    params.set("place_id", place_id);
+    params.set("place_id", placeData.place_id);
     params.set("reviews_sort", "newest");
     params.set("fields", placeDetailFields.join(","))
     const url = createUrlWithKey(DETAILS_URL, params);
@@ -123,14 +124,14 @@ const requestPlaceDetails = async (supabaseClient: SupabaseClient, place_id: str
     }
 
     // Delete old data
-    await deletePlaceDetails(supabaseClient, place_id)
+    await deletePlaceDetails(supabaseClient, placeData.place_id)
 
     // Update placeDetails
-    const processedPlaceDetail = await addPlaceDetails(supabaseClient, placeDetails.result)
+    const processedPlaceDetail = await addPlaceDetails(supabaseClient, placeData, placeDetails.result)
     
     // Reinsert new data
-    await addPhotos(supabaseClient, placeDetails?.result?.photos ? placeDetails.result.photos : [], place_id)
-    await addReviews(supabaseClient, placeDetails?.result?.reviews ? placeDetails.result.reviews : [], place_id)
+    await addPhotos(supabaseClient, placeDetails?.result?.photos ? placeDetails.result.photos : [], placeData.place_id)
+    await addReviews(supabaseClient, placeDetails?.result?.reviews ? placeDetails.result.reviews : [], placeData.place_id)
 
     return;
 }

@@ -4,7 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getPlaceDetails } from "../_places_service/places_service.ts"
+import { createGroup } from "../_group_service/group_service.ts"
 
 serve(async (req) => {
   try {
@@ -15,11 +15,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    const { place_id } = await req.json()
-    const placeDetails = await getPlaceDetails(supabaseClient, place_id)
+    const { category, min_match, lat, long, radius } = await req.json()
+    const createGroupRes = await createGroup(supabaseClient, min_match, category, lat, long, radius)
 
     return new Response(
-      JSON.stringify(placeDetails),
+      JSON.stringify(createGroupRes),
       { headers: { "Content-Type": "application/json" } },
     )
   } catch (error) {
@@ -36,7 +36,4 @@ serve(async (req) => {
 // curl -i --location --request POST 'http://localhost:54321/functions/v1/' \
 //   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
 //   --header 'Content-Type: application/json' \
-//   --data '{"place_id":"ChIJq8AnbNwP2jERnLf4UKBbEAU"}'
-
-  // ChIJq8AnbNwP2jERnLf4UKBbEAU
-  // ChIJ0YE-84QP2jER8T6Om_QxM2Q
+//   --data '{"category":"restaurant","min_match":"1","lat":"1.352690","long":"103.720740","radius":"500"}'
