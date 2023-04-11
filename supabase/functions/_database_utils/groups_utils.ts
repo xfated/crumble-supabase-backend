@@ -9,7 +9,7 @@ export interface GroupRow {
     min_match: number,
     lat: number,
     long: number,
-    match: string,
+    place_id?: string,
     next_page_token: string
 }
 
@@ -40,13 +40,9 @@ export async function addGroup(supabaseClient: SupabaseClient,
     return
 } 
 
-async function updateValue<T>(supabaseClient: SupabaseClient, 
-        field: string,
-        val: T,
-        group_id: string
-    ) {
+export async function updatePlaceId(supabaseClient: SupabaseClient, group_id: string, place_id: string) {
     const { error } = await supabaseClient.from(GROUP_TABLE)
-        .update({field: val})
+        .update({place_id: place_id})
         .eq('id', group_id)
 
     if (error) {
@@ -56,12 +52,16 @@ async function updateValue<T>(supabaseClient: SupabaseClient,
     return    
 }
 
-export async function updateCurFetch(supabaseClient: SupabaseClient, curFetch: number, group_id: string) {
-    await updateValue<number>(supabaseClient, "cur_fetch", curFetch, group_id)
-}
+export async function updateNextPageToken(supabaseClient: SupabaseClient, group_id: string, next_page_token: string) {
+    const { error } = await supabaseClient.from(GROUP_TABLE)
+        .update({next_page_token: next_page_token})
+        .eq('id', group_id)
 
-export async function updateMatch(supabaseClient: SupabaseClient, place_id: string, group_id: string) {
-    await updateValue<string>(supabaseClient, "place_id", place_id, group_id)
+    if (error) {
+        console.error(error.message)
+        throw error
+    } 
+    return    
 }
 
 export async function deleteGroup(supabaseClient: SupabaseClient, group_id: string) {

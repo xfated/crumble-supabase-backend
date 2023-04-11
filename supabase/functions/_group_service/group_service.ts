@@ -1,8 +1,8 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { cryptoRandomString } from "https://deno.land/x/crypto_random_string@1.0.0/mod.ts"
-import { GroupRow, getGroupRow, addGroup, deleteGroup } from "../_database_utils/groups_utils.ts"
+import { GroupRow, getGroupRow, addGroup, deleteGroup, updateNextPageToken } from "../_database_utils/groups_utils.ts"
 import { PlaceDetailRow } from "../_database_utils/placedetail_utils.ts"
-import { addGroupPlaces, getGroupPlaces } from "../_database_utils/groupplaces_utils.ts"
+import { addGroupPlaces, getGroupPlaces, getGroupPlacesWithToken } from "../_database_utils/groupplaces_utils.ts"
 import { getNearbyPlacesWithDetails } from "../_places_service/places_service.ts"
 
 // const TTL = 1
@@ -83,3 +83,47 @@ export const joinGroup = async (supabaseClient: SupabaseClient, group_id: string
         results: nearbyPlaces,
     }
 }
+
+interface GetGroupNextPlacesRes {
+    results: PlaceDetailRow[],
+    next_page_token: string,
+    group_id: string,
+}
+
+export const getGroupNextPlaces = async (supabaseClient: SupabaseClient, group_id: string, next_page_token: string): Promise<GetGroupNextPlacesRes> => {
+    // find existing group
+    const groupRow = await getGroupRow(supabaseClient, group_id)
+    if (groupRow === null) {
+        throw new Error("Unable to find group")
+    }
+    
+    // Check if places already requested
+    let nearbyPlaces = await getGroupPlacesWithToken(supabaseClient, group_id, next_page_token)
+    if (nearbyPlaces.length > 0) { // if already have results, return
+        return {
+            group_id,
+            "next_page_token": groupRow.next_page_token, // update existing
+            results: nearbyPlaces
+        }
+    }
+
+    // fetch with next page token
+    const newNearbyPlaces = await getNearbyPlacesWithDetails(supabaseClient, "", 0, 0, 0, next_page_token)
+    
+    // update newly fetched places
+    await addGroupPlaces(supabaseClient, newNearbyPlaces.results.map((place: PlaceDetailRow) => ({
+        "group_id": group_id,
+        "place_id": place.place_id,
+        "next_page_token": next_page_token // update next_page_token used to fetch
+    })))
+
+    // update next_page_token for group
+    await updateNextPageToken(supabaseClient, group_id, newNearbyPlaces.next_page_token ?? null)
+    return {
+        group_id,
+        next_page_token,
+        results: newNearbyPlaces.results
+    } 
+}
+
+

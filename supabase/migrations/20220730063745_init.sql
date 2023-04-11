@@ -53,7 +53,7 @@ create table groups (
     long float8 NOT NULL,
     radius int2 NOT NULL,
     next_page_token text,
-    match text
+    place_id text references placedetails (place_id)
 );
 -- Set 1 day TTL for groups
 alter table groups

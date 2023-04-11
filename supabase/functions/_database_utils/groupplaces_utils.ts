@@ -60,3 +60,22 @@ export async function getGroupPlaces(supabaseClient: SupabaseClient, group_id: s
     } 
     return (data as GroupPlaceDetail[]).map((item: GroupPlaceDetail) => { return item.placedetails })
 }
+
+export async function getGroupPlacesWithToken(supabaseClient: SupabaseClient, group_id: string, next_page_token: string): Promise<PlaceDetailRow[]> {
+    const { data, error } = await supabaseClient.from(GROUPPLACE_TABLE)
+        .select(
+            `${PLACE_DETAIL_TABLE} (
+                *,
+                ${PHOTO_TABLE} (*),
+                ${REVIEW_TABLE} (*)
+            )`
+        )
+        .eq('group_id', group_id)
+        .eq('next_page_token', next_page_token)
+
+    if (error) {
+        console.error(error.message)
+        throw error
+    } 
+    return (data as GroupPlaceDetail[]).map((item: GroupPlaceDetail) => { return item.placedetails })
+}
