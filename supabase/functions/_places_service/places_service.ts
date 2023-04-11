@@ -33,7 +33,7 @@ const createUrlWithKey = (base_url: string, params: Map<string, string>): string
     return base_url;
 }
 
-export const getNearbyPlaces = async (category: string, lat: number, long: number, radius: number, nextPageToken: string): Promise<PlacesRes | null> => {
+const getNearbyPlaces = async (supabaseClient: SupabaseClient, category: string, lat: number, long: number, radius: number, nextPageToken: string): Promise<PlacesRes> => {
     const params = new Map();
     params.set("location", `${lat},${long}`);
     params.set("radius", radius);
@@ -43,7 +43,27 @@ export const getNearbyPlaces = async (category: string, lat: number, long: numbe
     }   
     const url = createUrlWithKey(NEARBY_PLACES_URL, params);
     const res: ApiResponse<PlacesRes> = await httpUtils.get(url)
+    if (!res.success || res.data === null) {
+        throw new Error(res.message ?? "Unable to getNearbyPlaces")
+    }
     return res.data;
+}
+
+interface GetNearbyPlacesWithDetailsRes {
+    results: PlaceDetailRow[],
+    next_page_token: string
+}
+
+export const getNearbyPlacesWithDetails = async (supabaseClient: SupabaseClient, category: string, lat: number, long: number, radius: number, nextPageToken: string): Promise<GetNearbyPlacesWithDetailsRes> => {
+    const results = await getNearbyPlaces(supabaseClient, category, lat, long, radius, nextPageToken)
+    let resWithDetails: Promise<PlaceDetailRow>[] = []
+    for (const result of results.results) {
+        resWithDetails.push(getPlaceDetails(supabaseClient, result.place_id))
+    }
+    return {
+        "results": await Promise.all(resWithDetails),
+        "next_page_token": results.next_page_token
+    }
 }
 
 
@@ -59,7 +79,7 @@ const isOutdated = (placeDetails: PlaceDetailRow): boolean => {
     return created_at < ttl
 }
 
-export const getPlaceDetails = async (supabaseClient: SupabaseClient, place_id: string): Promise<PlaceDetailRow | null> => {    
+export const getPlaceDetails = async (supabaseClient: SupabaseClient, place_id: string): Promise<PlaceDetailRow> => {    
     // Check db
     let placeDetails = await fetchPlaceDetails(supabaseClient, place_id)
 
@@ -77,7 +97,13 @@ export const getPlaceDetails = async (supabaseClient: SupabaseClient, place_id: 
     // Get new results
     console.log("Fetching new results")
     await requestPlaceDetails(supabaseClient, place_id)
-    return await fetchPlaceDetails(supabaseClient, place_id)
+
+    // handle null so we don't have to handle nulls downstream
+    const updatedResults = await fetchPlaceDetails(supabaseClient, place_id)
+    if (!updatedResults) {
+        throw new Error("Unable to getPlaceDetails")
+    }
+    return updatedResults
 }
 
 const requestPlaceDetails = async (supabaseClient: SupabaseClient, place_id: string) => {

@@ -40,9 +40,12 @@ create table groups (
     id text primary key,
     created_at timestamptz DEFAULT now(),
     min_match int2,
+    lat float8,
+    long float8,
+    cur_fetch int2,
     match text
 );
 
--- create table matches (
+ -- create table matches (
 --     group_id te
 -- )

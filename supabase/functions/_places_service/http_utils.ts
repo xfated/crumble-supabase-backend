@@ -8,7 +8,7 @@ async function get<T>(url: string): Promise<ApiResponse<T>> {
     try {
         const resp = await fetch(url)
         const body = await resp.json()
-        return { success: false, data: body, message: null}
+        return { success: true, data: body, message: null}
     } catch (error: any) {
         console.error(error.message)
         return { success: false, data: null, message: error.message }
