@@ -52,24 +52,59 @@ create table groups (
     lat float8 NOT NULL,
     long float8 NOT NULL,
     radius int2 NOT NULL,
-    cur_fetch int2 NOT NULL, -- number of times fetched for this query (due to next_page_token)
+    next_page_token text,
     match text
 );
+-- Set 1 day TTL for groups
+alter table groups
+    enable row level security;
+create policy "Groups are live for a day"
+    on groups
+    for select using (
+        created_at > (current_timestamp - interval '1 day')
+    );
+create policy "Groups updatable by everyone" 
+    on groups for update
+    to authenticated, anon
+    using ( true );
+create policy "Allow insert access for groups" 
+    on groups for insert
+    to authenticated, anon
+    with check ( true );
 
 create table groupplaces ( -- store nearby places for a given group to prevent multiple queries
     created_at timestamptz DEFAULT now(),
     group_id text references groups (id) on delete cascade NOT NULL,
     place_id text references placedetails (place_id) on delete cascade NOT NULL,
+    next_page_token text NOT NULL,
     PRIMARY KEY(group_id, place_id)
 );
-
+alter table groupplaces
+    enable row level security;
+create policy "Groupplaces are live for a day"
+    on groupplaces
+    for select using (
+        created_at > (current_timestamp - interval '1 day')
+    );
+create policy "Allow insert access for groupplaces" 
+    on groupplaces for insert
+    to authenticated, anon
+    with check ( true );
+    
 create table grouplikes (
     id integer primary key generated always as identity,
     created_at timestamptz DEFAULT now(),
     group_id text references groups (id) on delete cascade NOT NULL,
     place_id text references placedetails (place_id) on delete cascade NOT NULL
 );
-
- -- create table matches (
---     group_id te
--- )
+alter table grouplikes
+    enable row level security;
+create policy "Grouplikes are live for a day"
+    on grouplikes
+    for select using (
+        created_at > (current_timestamp - interval '1 day')
+    );
+create policy "Allow insert access for grouplikes" 
+    on groupplaces for insert
+    to authenticated, anon
+    with check ( true );

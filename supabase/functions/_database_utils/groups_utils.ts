@@ -9,8 +9,8 @@ export interface GroupRow {
     min_match: number,
     lat: number,
     long: number,
-    cur_fetch: number,
-    match: string
+    match: string,
+    next_page_token: string
 }
 
 export async function addGroup(supabaseClient: SupabaseClient, 
@@ -19,7 +19,8 @@ export async function addGroup(supabaseClient: SupabaseClient,
         min_match: number,
         lat: number,
         long: number,
-        radius: number
+        radius: number,
+        next_page_token: string
     ) {
     const { error } = await supabaseClient.from(GROUP_TABLE)
         .insert({
@@ -29,7 +30,7 @@ export async function addGroup(supabaseClient: SupabaseClient,
             lat,
             long,
             radius,
-            "cur_fetch": 0
+            next_page_token
         })
 
     if (error) {
