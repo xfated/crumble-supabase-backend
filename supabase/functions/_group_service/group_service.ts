@@ -1,8 +1,9 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { cryptoRandomString } from "https://deno.land/x/crypto_random_string@1.0.0/mod.ts"
-import { GroupRow, getGroupRow, addGroup, deleteGroup, updateNextPageToken } from "../_database_utils/groups_utils.ts"
+import { GroupRow, getGroupRow, addGroup, deleteGroup, updateNextPageToken, updatePlaceId } from "../_database_utils/groups_utils.ts"
 import { PlaceDetailRow } from "../_database_utils/placedetail_utils.ts"
 import { addGroupPlaces, getGroupPlaces, getGroupPlacesWithToken } from "../_database_utils/groupplaces_utils.ts"
+import { addGroupLikeRow, countNumLikes } from "../_database_utils/grouplikes_utils.ts"
 import { getNearbyPlacesWithDetails } from "../_places_service/places_service.ts"
 
 // const TTL = 1
@@ -65,6 +66,7 @@ interface JoinGroupRes {
     results: PlaceDetailRow[],
     next_page_token: string,
     group_id: string,
+    place_id?: string,
 }
 
 export const joinGroup = async (supabaseClient: SupabaseClient, group_id: string): Promise<JoinGroupRes> => {
@@ -81,6 +83,7 @@ export const joinGroup = async (supabaseClient: SupabaseClient, group_id: string
         group_id,
         next_page_token: groupRow.next_page_token,
         results: nearbyPlaces,
+        place_id: groupRow.place_id ?? undefined
     }
 }
 
@@ -126,4 +129,57 @@ export const getGroupNextPlaces = async (supabaseClient: SupabaseClient, group_i
     } 
 }
 
+interface AddGroupLikeRes {
+    place_id: string | null,
+}
 
+export const addGroupLike = async (supabaseClient: SupabaseClient, group_id: string, place_id: string): Promise<AddGroupLikeRes> => {
+    // find existing group
+    const groupRow = await getGroupRow(supabaseClient, group_id)
+    if (groupRow === null) {
+        throw new Error("Unable to find group")
+    }
+
+    // if already have match (somehow ?)
+    if (groupRow.place_id) {
+        return {
+            "place_id": groupRow.place_id
+        }
+    }
+
+    // Add to grouplikes
+    await addGroupLikeRow(supabaseClient, group_id, place_id)
+    const count = await countNumLikes(supabaseClient, group_id, place_id)
+
+    if (count >= groupRow.min_match) { // if meet criteria
+        await updatePlaceId(supabaseClient, group_id, place_id)
+        return {
+            "place_id": place_id
+        }
+    }
+    return {
+        "place_id": null
+    }
+}
+
+interface HasMatchRes {
+    place_id: string | null
+}
+
+export const hasMatch = async (supabaseClient: SupabaseClient, group_id: string): Promise<HasMatchRes> => {
+    // find existing group
+    const groupRow = await getGroupRow(supabaseClient, group_id)
+    if (groupRow === null) {
+        throw new Error("Unable to find group")
+    }
+
+    // if already have match (somehow ?)
+    if (groupRow.place_id) {
+        return {
+            "place_id": groupRow.place_id
+        }
+    }
+    return {
+        "place_id": null
+    }
+}

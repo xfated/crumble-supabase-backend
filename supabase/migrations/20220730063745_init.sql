@@ -105,6 +105,6 @@ create policy "Grouplikes are live for a day"
         created_at > (current_timestamp - interval '1 day')
     );
 create policy "Allow insert access for grouplikes" 
-    on groupplaces for insert
+    on grouplikes for insert
     to authenticated, anon
     with check ( true );

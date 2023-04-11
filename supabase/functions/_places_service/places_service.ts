@@ -91,6 +91,7 @@ export const getPlaceDetails = async (supabaseClient: SupabaseClient, placeData:
         isValid = false
     }
 
+    // if is valid, return
     if (isValid && placeDetails !== null) {
         return placeDetails
     }
