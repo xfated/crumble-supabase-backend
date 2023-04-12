@@ -35,6 +35,7 @@ export interface PlaceDetailRow {
 	lat: number,
     long: number,
 	formatted_address: string;
+    photo: string;
     photos: PhotoRow[];
     reviews: ReviewRow[];
 	dine_in: boolean;
@@ -78,7 +79,8 @@ export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlac
         "long": placeDetails.geometry.location.lng,
         "country_long": country ? country.long_name : "",
         "country_short": country ? country.short_name : "",
-        "types": nearbyPlaceData.types.join(",")
+        "types": nearbyPlaceData.types.join(","),
+        "photo": nearbyPlaceData.photos?.length > 0 ? nearbyPlaceData.photos[0].photo_reference : ""
     }
 
     const { error } = await supabaseClient.from(PLACE_DETAIL_TABLE)

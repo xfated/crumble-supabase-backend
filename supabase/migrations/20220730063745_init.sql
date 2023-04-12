@@ -1,3 +1,14 @@
+create table version (
+    id integer primary key generated always as identity,
+    created_at timestamptz DEFAULT now(),
+    version text 
+);
+alter table version
+    enable row level security;
+create policy "Groupplaces are live for a day"
+    on version
+    for select using ( true );
+
 create table placedetails (
     place_id text primary key NOT NULL,
     created_at timestamptz DEFAULT now(),
@@ -6,6 +17,7 @@ create table placedetails (
     lat float8,
     long float8,
     formatted_address text,
+    photo text,
     dine_in boolean,
     takeout boolean,
     serves_breakfast boolean,
@@ -20,6 +32,7 @@ create table placedetails (
     user_ratings_total int2,
     business_status text
 );
+
 
 create table reviews (
     id integer primary key generated always as identity,

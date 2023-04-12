@@ -4,7 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { joinGroup } from "../_group_service/group_service.ts"
+import { checkVersion } from "../_database_utils/version_utils.ts"
 
 serve(async (req) => {
   try {
@@ -15,11 +15,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    const { group_id } = await req.json()
-    const joinGroupRes = await joinGroup(supabaseClient, group_id)
+    const { version } = await req.json()
+    const checkVersionRes = await checkVersion(supabaseClient, version)
 
     return new Response(
-      JSON.stringify(joinGroupRes),
+      JSON.stringify(checkVersionRes),
       { headers: { "Content-Type": "application/json" } },
     )
   } catch (error) {
@@ -32,8 +32,9 @@ serve(async (req) => {
   }
 })
 
+
 // To invoke:
 // curl -i --location --request POST 'http://localhost:54321/functions/v1/' \
 //   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
 //   --header 'Content-Type: application/json' \
-//   --data '{"group_id":"KitES2"}'
+//   --data '{"version":"1"}'

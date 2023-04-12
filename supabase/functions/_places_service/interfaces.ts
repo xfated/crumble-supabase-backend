@@ -27,6 +27,7 @@ export interface Place {
 	types: string[];
 	price_level: number;
 	rating: number;
+	photos: Photo[];
 	user_ratings_total: number;
 	business_status: string;
 	// opening_hours: OpeningHours;
