@@ -3,6 +3,7 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Place, PlaceDetail, AddressComponent, extractObj } from "../_places_service/interfaces.ts"
 import { REVIEW_TABLE, ReviewRow } from "./review_utils.ts"
 import { PHOTO_TABLE, PhotoRow } from "./photo_utils.ts"
+import { getImageBase64 } from "../_places_service/place_requests.ts"
 
 export const PLACE_DETAIL_TABLE = "placedetails"
 
@@ -72,6 +73,8 @@ export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlac
 
     const country = extractCountry(placeDetails)
 
+    const photoDataUrl = nearbyPlaceData.photos?.length > 0 ? await getImageBase64(nearbyPlaceData.photos[0].photo_reference) : ""
+    console.log(photoDataUrl)
     const processedPlaceDetail = {
         ...extractedNearbyPlaceData,
         ...placeData,
@@ -80,16 +83,16 @@ export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlac
         "country_long": country ? country.long_name : "",
         "country_short": country ? country.short_name : "",
         "types": nearbyPlaceData.types.join(","),
-        "photo": nearbyPlaceData.photos?.length > 0 ? nearbyPlaceData.photos[0].photo_reference : ""
+        "photo": photoDataUrl
     }
 
-    const { error } = await supabaseClient.from(PLACE_DETAIL_TABLE)
-        .upsert(processedPlaceDetail)
+    // const { error } = await supabaseClient.from(PLACE_DETAIL_TABLE)
+    //     .upsert(processedPlaceDetail)
 
-    if (error) {
-        console.error(error.message)
-        throw error
-    } 
+    // if (error) {
+    //     console.error(error.message)
+    //     throw error
+    // } 
     
     return
 }
