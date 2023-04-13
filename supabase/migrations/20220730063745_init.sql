@@ -5,7 +5,7 @@ create table version (
 );
 alter table version
     enable row level security;
-create policy "Groupplaces are live for a day"
+create policy "Can only read version"
     on version
     for select using ( true );
 
@@ -52,9 +52,7 @@ create table photos (
     id integer primary key generated always as identity,
     created_at timestamptz DEFAULT now(),
     place_id text references placedetails (place_id) on delete cascade NOT NULL,
-    height int4,
-    width int4,
-    photo_reference text NOT NULL 
+    data_url text NOT NULL 
 );
 
 create table groups (

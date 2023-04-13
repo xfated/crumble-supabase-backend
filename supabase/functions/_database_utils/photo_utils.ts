@@ -1,31 +1,27 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 import { Photo, extractObj } from "../_places_service/interfaces.ts"
+import { getImageBase64 } from "../_places_service/place_requests.ts"
 
 export const PHOTO_TABLE = "photos"
-
-const extractPhoto = extractObj<Photo>([
-	"height",
-	"width",
-	"photo_reference"
-])
 
 export interface PhotoRow {
     id?: number;
     created_at?: number;
-	height: number;
-	width: number;
-	photo_reference: string;
+	place_id: string;
+	data_url: string;
 }
 
 export async function addPhotos(supabaseClient: SupabaseClient, photos: Photo[], place_id: string) {
     var processedPhotos = []
     for (const photo of photos) {
-        const data = extractPhoto(photo)
-        processedPhotos.push({
-            ...data,
-            place_id
-        })
+        let data_url = await getImageBase64(photo.photo_reference)
+        if (data_url.length > 0) {
+            processedPhotos.push({
+                place_id,
+                data_url
+            })
+        }
     }
     
     const { error } = await supabaseClient.from(PHOTO_TABLE)

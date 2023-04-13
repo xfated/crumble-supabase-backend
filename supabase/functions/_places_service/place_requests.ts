@@ -6,6 +6,7 @@ const NEARBY_PLACES_URL = "https://maps.googleapis.com/maps/api/place/nearbysear
 const DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json?"
 const IMAGE_URL = "https://maps.googleapis.com/maps/api/place/photo?"
 const API_KEY = Deno.env.get("PLACES_API_KEY") ?? ""
+const MAX_PHOTO_SIZE = 50000
 
 const createUrlWithKey = (base_url: string, params: Map<string, string>): string => {
     params.set("key", API_KEY);
@@ -67,7 +68,7 @@ export const queryPlaceDetails = async (placeData: Place): Promise<DetailRes> =>
 
 export const getImageBase64 = async (photoRes: string): Promise<String> => {
     const params = new Map()
-    params.set("maxwidth", 200)
+    params.set("maxwidth", 250)
     params.set("photo_reference", photoRes)
     const url = createUrlWithKey(IMAGE_URL, params);
     
@@ -84,6 +85,12 @@ export const getImageBase64 = async (photoRes: string): Promise<String> => {
         if (reader.result !== null) {
             dataUrl = reader.result as string
         } 
+
+        // don't store images that are too large
+        const size = (new Blob([dataUrl as string])).size 
+        if (size > MAX_PHOTO_SIZE) {
+            dataUrl = "" // don't store if too large 
+        }
 
         return dataUrl
     } catch (error: any) {

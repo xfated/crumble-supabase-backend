@@ -73,8 +73,9 @@ export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlac
 
     const country = extractCountry(placeDetails)
 
-    const photoDataUrl = nearbyPlaceData.photos?.length > 0 ? await getImageBase64(nearbyPlaceData.photos[0].photo_reference) : ""
-    console.log(photoDataUrl)
+    // get photo dataurl
+    let photoDataUrl = nearbyPlaceData.photos?.length > 0 ? await getImageBase64(nearbyPlaceData.photos[0].photo_reference) : ""
+    
     const processedPlaceDetail = {
         ...extractedNearbyPlaceData,
         ...placeData,
@@ -86,13 +87,13 @@ export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlac
         "photo": photoDataUrl
     }
 
-    // const { error } = await supabaseClient.from(PLACE_DETAIL_TABLE)
-    //     .upsert(processedPlaceDetail)
+    const { error } = await supabaseClient.from(PLACE_DETAIL_TABLE)
+        .upsert(processedPlaceDetail)
 
-    // if (error) {
-    //     console.error(error.message)
-    //     throw error
-    // } 
+    if (error) {
+        console.error(error.message)
+        throw error
+    } 
     
     return
 }
