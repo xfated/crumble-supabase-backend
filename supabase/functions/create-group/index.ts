@@ -21,13 +21,15 @@ serve(async (req) => {
     })
     const ratelimit = new Ratelimit({
       redis: redis,
-      limiter: Ratelimit.slidingWindow(30, "60 s"),
+      limiter: Ratelimit.slidingWindow(60, "60 s"),
       analytics: true
     })
     // use constant string to limit all requests with a single ratelimit
     // or use a userID, apiKey or ip address for individual limits
     const ipAddress = ips(req)
-    const { success } = await ratelimit.limit(ipAddress);
+    const key = ipAddress.length > 0 ? ipAddress[0] : "create-group"
+
+    const { success } = await ratelimit.limit(key);
     if (!success) {
       throw new Error("query limit exceeded")
     }
