@@ -8,7 +8,7 @@ interface VersionRow {
     version: string
 }
 
-export async function checkVersion(supabaseClient: SupabaseClient, version_number: string) {
+export async function checkVersion(supabaseClient: SupabaseClient, version_number: string): boolean {
     const { data, error } = await supabaseClient.from(VERSION_TABLE)
         .select(`*`)
 
@@ -17,9 +17,9 @@ export async function checkVersion(supabaseClient: SupabaseClient, version_numbe
         throw error
     }   
     
-    // No details found
+    // Version not found
     if (data.length == 0) {
-        return null
+        return false
     }
     const versionRow = data[0] as VersionRow
     return versionRow.version === version_number

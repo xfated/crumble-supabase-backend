@@ -1,0 +1,6 @@
+{
+    "imports": {
+        "@upstash/redis": "https://deno.land/x/upstash_redis@v1.20.2/mod.ts",
+        "@upstash/ratelimit": "https://cdn.skypack.dev/@upstash/ratelimit@latest"
+    }
+}

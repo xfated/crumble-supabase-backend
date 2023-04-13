@@ -5,9 +5,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { createGroup } from "../_group_service/group_service.ts"
+import { Redis } from "@upstash/redis";
+import { Ratelimit } from "@upstash/ratelimit"
+
+function ips(req: Request) {
+  return req.headers.get('x-forwarded-for')?.split(/\s*,\s*/)
+}
 
 serve(async (req) => {
   try {
+    // Handle rate limiting first
+    const redis = new Redis({
+      url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
+      token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!
+    })
+    const ratelimit = new Ratelimit({
+      redis: redis,
+      limiter: Ratelimit.slidingWindow(30, "60 s"),
+      analytics: true
+    })
+    // use constant string to limit all requests with a single ratelimit
+    // or use a userID, apiKey or ip address for individual limits
+    const ipAddress = ips(req)
+    const { success } = await ratelimit.limit(ipAddress);
+    if (!success) {
+      throw new Error("query limit exceeded")
+    }
+
     const supabaseClient = createClient(
       // Supabase API URL - env var exported by default.
       Deno.env.get('SUPABASE_URL') ?? '',
