@@ -45,6 +45,7 @@ export const getNearbyPlaces = async (category: string, lat: number, long: numbe
     if (!res.success || res.data === null) {
         throw new Error(res.message ?? "Unable to getNearbyPlaces")
     }
+    
     return res.data;
 }
 
@@ -62,7 +63,8 @@ export const queryPlaceDetails = async (placeData: Place): Promise<DetailRes> =>
     }
 
     const placeDetails = res.data;
-    
+
+    console.log(placeDetails.result.address_components)
     return placeDetails
 }
 

@@ -44,10 +44,14 @@ export interface PlaceDetailRow {
 	serves_breakfast: boolean;
 	serves_lunch: boolean;
 	serves_dinner: boolean;
-
-    // info from Place
     country_long: string;
     country_short: string;
+    locality: string;
+    route: string;
+    postal_code: string;
+    neighbourhood: string;
+
+    // info from Place
     vicinity: string;
     types: string;
     price_level: number;
@@ -56,22 +60,25 @@ export interface PlaceDetailRow {
     business_status: string;
 }
 
-const extractCountry = (placeDetail: PlaceDetail): AddressComponent | null => {
+const extractAddresses = (placeDetail: PlaceDetail, fields: string[]): {[address: string]: AddressComponent} => {
+    const locations: {[address: string]: AddressComponent} = {}
     if (!placeDetail.address_components) {
-        return null
+        return locations
     }
-    const country = placeDetail.address_components.filter(x => x.types.includes("country"))
-    if (country.length == 0) {
-        return null
+    for (let field of fields) {
+        const loc = placeDetail.address_components.filter(x => x.types.includes(field))
+        if (loc.length > 0) {
+            locations[field] = loc[0]
+        }
     }
-    return country[0]
+    return locations
 }
 
 export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlaceData: Place, placeDetails: PlaceDetail) {
     const placeData = extractPlaceDetail(placeDetails)
     const extractedNearbyPlaceData = extractNearbyPlaceData(nearbyPlaceData)
 
-    const country = extractCountry(placeDetails)
+    const locations = extractAddresses(placeDetails, ["country", "locality", "route", "postal_code", "neighborhood"])
 
     // get photo dataurl
     let photoDataUrl = nearbyPlaceData.photos?.length > 0 ? await getImageBase64(nearbyPlaceData.photos[0].photo_reference) : ""
@@ -81,8 +88,12 @@ export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlac
         ...placeData,
         "lat": placeDetails.geometry.location.lat,
         "long": placeDetails.geometry.location.lng,
-        "country_long": country ? country.long_name : "",
-        "country_short": country ? country.short_name : "",
+        "country_long": locations["country"]?.long_name ?? "",
+        "country_short": locations["country"]?.short_name ?? "",
+        "locality": locations["locality"]?.short_name ?? "",
+        "route": locations["route"]?.short_name ?? "",
+        "postal_code": locations["postal_code"]?.short_name ?? "",
+        "neighborhood": locations["neighborhood"]?.short_name ?? "",
         "types": nearbyPlaceData.types.join(","),
         "photo": photoDataUrl
     }

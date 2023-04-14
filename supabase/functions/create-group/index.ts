@@ -27,7 +27,7 @@ serve(async (req) => {
     // use constant string to limit all requests with a single ratelimit
     // or use a userID, apiKey or ip address for individual limits
     const ipAddress = ips(req)
-    const key = ipAddress.length > 0 ? ipAddress[0] : "create-group"
+    const key = (ipAddress && ipAddress.length > 0) ? ipAddress[0] : "create-group"
 
     const { success } = await ratelimit.limit(key);
     if (!success) {
