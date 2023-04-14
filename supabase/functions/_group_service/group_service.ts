@@ -18,14 +18,14 @@ import { getNearbyPlacesWithDetails } from "../_places_service/places_service.ts
 // }
 
 const getNewGroupId = async (supabaseClient: SupabaseClient): Promise<string> => {
-    let group_id = cryptoRandomString({length: 6, type: 'alphanumeric'})
+    let group_id = cryptoRandomString({length: 6, type: 'alphanumeric'}).toUpperCase()
     let groupExists = true
     while (groupExists) {
         const groupRow = await getGroupRow(supabaseClient, group_id)
         if (groupRow === null) { // null or outdated
             groupExists = false
         } else { // exists, try another group id
-            group_id = cryptoRandomString({length: 6, type: 'alphanumeric'})   
+            group_id = cryptoRandomString({length: 6, type: 'alphanumeric'}).toUpperCase()   
         }
         //  else if (isOutdated(groupRow)) { // outdated
         //     groupExists = false
