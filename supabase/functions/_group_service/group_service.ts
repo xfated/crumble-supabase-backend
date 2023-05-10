@@ -83,7 +83,7 @@ export const joinGroup = async (supabaseClient: SupabaseClient, group_id: string
         group_id,
         next_page_token: groupRow.next_page_token,
         results: nearbyPlaces,
-        place_id: groupRow.place_id ?? undefined
+        place_id: groupRow.place_id ?? null
     }
 }
 
@@ -124,7 +124,7 @@ export const getGroupNextPlaces = async (supabaseClient: SupabaseClient, group_i
     await updateNextPageToken(supabaseClient, group_id, newNearbyPlaces.next_page_token ?? null)
     return {
         group_id,
-        next_page_token,
+        next_page_token: newNearbyPlaces.next_page_token ?? null,
         results: newNearbyPlaces.results
     } 
 }
