@@ -68,7 +68,7 @@ create table groups (
     long float8 NOT NULL,
     radius int2 NOT NULL,
     next_page_token text,
-    place_id text references placedetails (place_id)
+    place_id text
 );
 -- Set 1 day TTL for groups
 alter table groups
@@ -110,7 +110,7 @@ create table grouplikes (
     id integer primary key generated always as identity,
     created_at timestamptz DEFAULT now(),
     group_id text references groups (id) on delete cascade NOT NULL,
-    place_id text references placedetails (place_id) on delete cascade NOT NULL
+    place_id text
 );
 alter table grouplikes
     enable row level security;
