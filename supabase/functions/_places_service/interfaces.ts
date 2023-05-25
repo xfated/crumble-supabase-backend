@@ -55,7 +55,8 @@ interface Location {
 }
 
 interface Geometry {
-	location: Location;
+	location: Lo
+	cation;
 }
 
 export interface AddressComponent {

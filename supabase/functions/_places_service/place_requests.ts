@@ -1,20 +1,13 @@
-import {encode} from "https://deno.land/std/encoding/base64.ts";
+import { encode } from "https://deno.land/std/encoding/base64.ts";
 import { ApiResponse, httpUtils } from "./http_utils.ts"
 import { Place, DetailRes, PlacesRes } from "./interfaces.ts"
+import { createUrlWithKey } from "./google_api_utils.ts"
 
 const NEARBY_PLACES_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?"
 const DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json?"
 const IMAGE_URL = "https://maps.googleapis.com/maps/api/place/photo?"
-const API_KEY = Deno.env.get("PLACES_API_KEY") ?? ""
-const MAX_PHOTO_SIZE = 50000
 
-const createUrlWithKey = (base_url: string, params: Map<string, string>): string => {
-    params.set("key", API_KEY);
-    for (let [k, v] of params) {
-        base_url = base_url + `&${k}=${v}`;
-    };
-    return base_url;
-}
+const MAX_PHOTO_SIZE = 50000
 
 const placeDetailFields = [
 	"name",
