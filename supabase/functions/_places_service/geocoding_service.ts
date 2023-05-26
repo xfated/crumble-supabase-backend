@@ -4,7 +4,7 @@ import { Geometry } from "./interfaces.ts"
 
 const AUTOCOMPLETE_URL = "https://maps.googleapis.com/maps/api/geocode/json?"
 
-interface GeocodingDetails {
+export interface GeocodingDetails {
     formatted_address: string
     geometry: Geometry
     place_id: string

@@ -3,12 +3,17 @@
 // This enables autocomplete, go to definition, etc.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { queryGeocodingForLatLong } from '../_places_service/geocoding_service.ts'
+import { GeocodingDetails, queryGeocodingForAddress, queryGeocodingForLatLong } from '../_places_service/geocoding_service.ts'
 
 serve(async (req) => {
   try {
-    const { address } = await req.json()
-    const geocodingDetails = await queryGeocodingForLatLong(address)
+    const { lat, lng, address } = await req.json()
+    let geocodingDetails: GeocodingDetails;
+    if (address) {
+      geocodingDetails = await queryGeocodingForLatLong(address)
+    } else {
+      geocodingDetails = await queryGeocodingForAddress(lat, lng)
+    }
 
     return new Response(
       JSON.stringify(geocodingDetails),
@@ -25,6 +30,11 @@ serve(async (req) => {
 })
 
 // To invoke:
+// curl -i --location --request POST 'http://localhost:54321/functions/v1/geocoding' \
+//   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
+//   --header 'Content-Type: application/json' \
+//   --data '{"lat":1.335920180291502,"lng":103.7437635302915}'
+
 // curl -i --location --request POST 'http://localhost:54321/functions/v1/geocoding-get-latlong' \
 //   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
 //   --header 'Content-Type: application/json' \
