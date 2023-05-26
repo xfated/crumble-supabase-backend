@@ -123,3 +123,14 @@ create policy "Allow insert access for grouplikes"
     on grouplikes for insert
     to authenticated, anon
     with check ( true );
+
+create table feedback (
+    id integer primary key generated always as identity,
+    created_at timestamptz DEFAULT now(),
+    rating int2 NOT NULL,
+    description text NOT NULL
+);
+create policy "Only can create feedback"
+    on feedback for insert
+    to authenticated, anon
+    with check ( true );

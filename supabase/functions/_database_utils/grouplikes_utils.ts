@@ -1,5 +1,4 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { ICount } from './interfaces.ts'
 
 const GROUPLIKES_TABLE = "grouplikes"
 

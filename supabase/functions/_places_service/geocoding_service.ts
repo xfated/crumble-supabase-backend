@@ -29,7 +29,7 @@ export const queryGeocodingForLatLong = async (address: string): GeocodingDetail
 }
 
 // Address lookup
-export const queryGeocodingForAddress = async (lat: string, lng: string): GeocodingDetails => {
+export const queryGeocodingForAddress = async (lat: number, lng: number): GeocodingDetails => {
     // Check is valid numbers
     if (Number.isNaN(Number(lat)) || Number.isNaN(Number(lng))) {
         throw new Error("Lat/long provided is invalid")
