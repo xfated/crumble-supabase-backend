@@ -17,11 +17,14 @@ interface QueryAutocompleteRes {
     predictions: string[]
 }
 
-export const queryAutocomplete = async (input: string): QueryAutocompleteRes => {
+export const queryAutocomplete = async (input: string, country: string): QueryAutocompleteRes => {
     const params = new Map();
     params.set("input", input)
+    if (country.length > 0) {
+        params.set("components", `country:${country}`)
+    }
     const url = createUrlWithKey(AUTOCOMPLETE_URL, params);
-
+    console.log(url)
     // Make request
     const res: ApiResponse<any> = await httpUtils.get(url)
     if (!res.success || res.data === null) {

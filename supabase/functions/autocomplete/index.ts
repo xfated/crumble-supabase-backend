@@ -7,8 +7,8 @@ import { queryAutocomplete } from '../_places_service/autocomplete_service.ts'
 
 serve(async (req) => {
   try {
-    const { input } = await req.json()
-    const autocompleteResult = await queryAutocomplete(input)
+    const { input, country } = await req.json()
+    const autocompleteResult = await queryAutocomplete(input, country ?? "")
 
     return new Response(
       JSON.stringify(autocompleteResult),
@@ -28,4 +28,4 @@ serve(async (req) => {
 // curl -i --location --request POST 'http://localhost:54321/functions/v1/autocomplete' \
 //   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
 //   --header 'Content-Type: application/json' \
-//   --data '{"input":"westgate"}'
+//   --data '{"input":"westgate", "country":"sg"}'
