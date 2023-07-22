@@ -41,7 +41,7 @@ export async function addGroupPlaces(supabaseClient: SupabaseClient, groupPlaces
 }
 
 interface GroupPlaceDetail {
-    placedetails: PlaceDetailRow
+    placedetails: any
 }
 export async function getGroupPlaces(supabaseClient: SupabaseClient, group_id: string): Promise<PlaceDetailRow[]> {
     const { data, error } = await supabaseClient.from(GROUPPLACE_TABLE)
@@ -53,12 +53,13 @@ export async function getGroupPlaces(supabaseClient: SupabaseClient, group_id: s
             )`
         )
         .eq('group_id', group_id)
-
+    
     if (error) {
         console.error(error.message)
         throw error
     } 
-    return (data as GroupPlaceDetail[]).map((item: GroupPlaceDetail) => { return item.placedetails })
+
+    return (data as GroupPlaceDetail[]).map((item: any) => { return (item.placedetails as PlaceDetailRow)})
 }
 
 export async function getGroupPlacesWithToken(supabaseClient: SupabaseClient, group_id: string, next_page_token: string): Promise<PlaceDetailRow[]> {

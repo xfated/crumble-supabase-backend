@@ -10,6 +10,7 @@ serve(async (req) => {
     const { input, country } = await req.json()
     const autocompleteResult = await queryAutocomplete(input, country ?? "")
 
+    console.log(autocompleteResult)
     return new Response(
       JSON.stringify(autocompleteResult),
       { headers: { "Content-Type": "application/json" } },

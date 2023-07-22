@@ -102,6 +102,7 @@ export async function addPlaceDetails(supabaseClient: SupabaseClient, nearbyPlac
         .upsert(processedPlaceDetail)
 
     if (error) {
+        console.log(processedPlaceDetail)
         console.error(error.message)
         throw error
     } 

@@ -47,13 +47,13 @@ export const createGroup = async (supabaseClient: SupabaseClient, min_match: num
 
     // Get places for group
     const nearbyPlaces = await getNearbyPlacesWithDetails(supabaseClient, category, lat, long, radius, "")
-    
+
     // Create group and add places
     await addGroup(supabaseClient, group_id, category, min_match, lat, long, radius, nearbyPlaces.next_page_token ?? "")
     await addGroupPlaces(supabaseClient, nearbyPlaces.results.map((place: PlaceDetailRow) => ({
         "group_id": group_id,
         "place_id": place.place_id,
-        "next_page_token": "" // no next_page_token for first group of places
+        "next_page_token": "" //no next_page_token for first group of places
     })))
 
     return {
@@ -66,7 +66,7 @@ interface JoinGroupRes {
     results: PlaceDetailRow[],
     next_page_token: string,
     group_id: string,
-    place_id?: string,
+    place_id: string | null,
 }
 
 export const joinGroup = async (supabaseClient: SupabaseClient, group_id: string): Promise<JoinGroupRes> => {

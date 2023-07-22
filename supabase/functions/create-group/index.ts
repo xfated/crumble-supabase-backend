@@ -59,7 +59,7 @@ serve(async (req) => {
 })
 
 // To invoke:
-// curl -i --location --request POST 'http://localhost:54321/functions/v1/' \
+// curl -i --location --request POST 'http://localhost:54321/functions/v1/create-group' \
 //   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
 //   --header 'Content-Type: application/json' \
-//   --data '{"category":"restaurant","min_match":"1","lat":"1.352690","long":"103.720740","radius":"500"}'
+//   --data '{"category":"restaurant","min_match":"1","lat":"1.2837575","long":"103.8591065","radius":"400"}'

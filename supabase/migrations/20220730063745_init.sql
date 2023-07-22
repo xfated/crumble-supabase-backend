@@ -33,7 +33,7 @@ create table placedetails (
     types text,
     price_level int2,
     rating float4,
-    user_ratings_total int2,
+    user_ratings_total int4,
     business_status text
 );
 

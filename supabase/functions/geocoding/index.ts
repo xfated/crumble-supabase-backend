@@ -35,7 +35,7 @@ serve(async (req) => {
 //   --header 'Content-Type: application/json' \
 //   --data '{"lat":1.335920180291502,"lng":103.7437635302915}'
 
-// curl -i --location --request POST 'http://localhost:54321/functions/v1/geocoding-get-latlong' \
+// curl -i --location --request POST 'http://localhost:54321/functions/v1/geocoding' \
 //   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
 //   --header 'Content-Type: application/json' \
-//   --data '{"address":"Gateway Drive, Westgate, Singapore"}'
+//   --data '{"address":"Bayfront Avenue, Marina Bay Sands Singapore, Singapore"}'
